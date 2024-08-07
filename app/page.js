@@ -9,7 +9,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import {pink} from '@mui/material/colors';
-import { render } from "react-dom";
+import { createRoot } from 'react-dom/client';
 
 const theme = createTheme({
   palette: {
