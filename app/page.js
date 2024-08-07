@@ -7,7 +7,7 @@ import {collection, deleteDoc, doc, getDocs, query, getDoc, setDoc} from 'fireba
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import {pink} from '@mui/material/colors';
 import { render } from "react-dom";
 
@@ -89,6 +89,7 @@ export default function Home() {
     setInventory(inventoryList);
   }
   const addItem = async (item, newCount) => {
+    console.log("about to add item" + item + " with count " + newCount)
     const docRef = doc(collection(firestore, 'inventory'), item.toLowerCase());
     const docSnap = await getDoc(docRef);
 
@@ -152,17 +153,20 @@ export default function Home() {
       flexDirection='column'
       alignItems='center' 
       gap={2}
+      py={2}
     >
       <Modal open={open} onClose={handleClose}>
         <Box position='absolute' top='50%' left='50%' sx={{transform: 'translate(-50%, -50%)'}} width={400} bgcolor='white' border='2px solid #000' boxShadow={24} p={4} display='flex' flexDirection='column' gap={3}>
           <Typography variant='h6'>Add Item</Typography>
-          <Stack width='100%' direction='row' spacings={2}>
+          <Stack width='100%' direction='row' gap={1} spacings={2}>
             <TextField 
             variant='outlined'
             fullWidth
             label='Item'
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
+            error={itemName === ''}
+            helperText={itemName === '' ? 'Item name cannot be empty' : ''}
             />
             <TextField 
             variant='outlined'
@@ -170,10 +174,13 @@ export default function Home() {
             label='Quantity'
             value={itemCount}
             onChange={(e) => setItemCount(e.target.value)}
+            error={Number(itemCount) < 1}
+            helperText={Number(itemCount) < 1 ? 'Quantity must be greater than 0' : ''}
             />
-            
           </Stack>
-          <Button variant='outlined' onClick={() => {
+          <Button variant='outlined' sx={{":hover":"primary.dark"}} onClick={() => {
+              console.log(itemName)
+              console.log(itemCount)
               addItem(itemName, itemCount);
               setItemName('');
               setItemCount(1);
@@ -181,25 +188,29 @@ export default function Home() {
             }}>Add</Button>
         </Box>
       </Modal>
-      <Typography variant='h2' fontWeight={400} color={"primary.dark"}> Inventory Tracker </Typography>
-      <Button variant='contained' onClick={() => handleOpen()}>Add New Item</Button>
-      <Box border="1px solid #333"> 
-      <Box display='flex' width="100vw" height="100px" bgcolor={"primary.light"} alignItems="center" justifyContent="center">
-          <Typography variant='h4'>Inventory Items</Typography>
-      </Box>
+      <Stack direction="row" gap={75}>
+        <Typography variant='h2' fontWeight={400} color={"primary.dark"}>Inventory Tracker</Typography>
+        <Button variant='contained' size="large" onClick={() => handleOpen()}>Add New Item</Button>
+      </Stack>
       
-      <Stack width='100vw' height="100vh" spacing={2} overflow="auto" direction='column'>
+      <Box width='80vw' alignContent={"center"} border="1px solid primary.dark"> 
+      {/* <Box display='flex' height="100px" bgcolor={"primary.light"} alignItems="center" justifyContent="center">
+          <Typography variant='h4'>Inventory Items</Typography>
+      </Box> */}
+      
+      <Stack alignContent={"center"} height="675px" spacing={2} overflow="auto" direction='column'>
       <DataGrid
         rows={getRows(inventory)}
         columns={columns}
+        sx={{borderColor: 'primary.dark'}}
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 5,
+              pageSize: 10,
             },
           },
         }}
-        pageSizeOptions={[5]}
+        pageSizeOptions={[10]}
         checkboxSelection
         disableRowSelectionOnClick
         disableColumnFilter
@@ -211,6 +222,12 @@ export default function Home() {
         disableEval
         disableMultipleRowSelection
         disableVirtualization
+        slots={{ toolbar: GridToolbar }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+          },
+        }}
       />
       {/* {inventory.map(({name, count}) => (
         <Box key={name} width="100%"  display="flex" alignItems="center" justifyContent="space-between" bgColor="#f0f0f0" padding={3}>
